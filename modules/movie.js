@@ -4,21 +4,36 @@ const { response } = require('express');
 module.exports = handleMovie;
 
 function handleMovie(req,res){
-    
+    let inMemory={};
     let {searchQuery}=(req.query);
     let movieKey=process.env.movies_key;
     let url=`https://api.themoviedb.org/3/search/movie?api_key=${movieKey}&query=${searchQuery}`;
 
-    axios.get(url)
-    .then(results => {
-        const moviesArray = results.data.results.map(movie => new Movie (movie));
-        response.status(200).send(moviesArray);
-    })
+    if ((inMemory [searchQuery]) !== undefined ){
+        response.send(inMemory[searchQuery])
+        console.log('in memory');
+    }
+    else{
+        console.log('from API');
+ axios.get(url)
+    .then(result =>{
+       let movieArr = result.data.results.map(item => {
+         console.log('in result');
+         inMemory[searchQuery]=(movieArr) ; 
+         res.send(movieArr)
+            return new Movie(item)
+        })
+         
+    }).catch(err => {
+console.log(searchQuery,'inError');
+        res.status(500).send(`error in getting data ${err}`);
+        })
 
-}
+
+}}
+
 class Movie {
-    constructor(movie){
-
+    constructor(item){
         this.title=item.title;
         this.overview=item.overview;
         this.average_votes=item.vote_average;
